@@ -13,13 +13,15 @@ enum WeatherState {
 
 class WeatherViewModel with ChangeNotifier {
   WeatherState _state;
-  WeatherRepository repository = locator<WeatherRepository>();
-  Weather getirilenWeather;
+  WeatherRepository _repository = locator<WeatherRepository>();
+  Weather _getirilenWeather;
 
   WeatherViewModel() {
-    getirilenWeather = Weather();
+    _getirilenWeather = Weather();
     _state = WeatherState.InitialWeatherState;
   }
+
+  Weather get getirilenWeather => _getirilenWeather;
 
   WeatherState get state => _state;
 
@@ -31,11 +33,11 @@ class WeatherViewModel with ChangeNotifier {
   Future<Weather> havaDurumunuGetir(String sehirAdi) async {
     try {
       state = WeatherState.WeatherLoadingState;
-      getirilenWeather = await repository.getWeather(sehirAdi);
+      _getirilenWeather = await _repository.getWeather(sehirAdi);
       state = WeatherState.WeatherLoadedState;
     } catch (e) {
       state = WeatherState.WeatherErrorState;
     }
-    return getirilenWeather;
+    return _getirilenWeather;
   }
 }
