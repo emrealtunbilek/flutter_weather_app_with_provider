@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_weatherapp_with_bloc/viewmodels/mytheme_view_model.dart';
 import 'package:flutter_weatherapp_with_bloc/viewmodels/weather_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -31,7 +32,7 @@ class WeatherApp extends StatelessWidget {
       ),
       body: Center(
         child: (_weatherViewModel.state == WeatherState.WeatherLoadedState)
-            ? havaDurumuGeldi()
+            ? havaDurumuGeldi(context)
             : (_weatherViewModel.state == WeatherState.WeatherLoadingState)
                 ? havaDurumuGetiriliyor()
                 : (_weatherViewModel.state == WeatherState.WeatherErrorState)
@@ -41,7 +42,14 @@ class WeatherApp extends StatelessWidget {
     );
   }
 
-  ListView havaDurumuGeldi() {
+  ListView havaDurumuGeldi(BuildContext context) {
+    var getirilenHavaDurumuKisaltmasi = Provider.of<WeatherViewModel>(context)
+        .getirilenWeather
+        .consolidatedWeather[0]
+        .weatherStateAbbr;
+    Provider.of<MyThemeViewModel>(context)
+        .temaDegistir(getirilenHavaDurumuKisaltmasi);
+
     return ListView(
       children: <Widget>[
         Padding(
