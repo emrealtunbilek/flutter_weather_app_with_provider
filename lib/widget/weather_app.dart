@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_weatherapp_with_bloc/viewmodels/mytheme_view_model.dart';
 import 'package:flutter_weatherapp_with_bloc/viewmodels/weather_view_model.dart';
@@ -16,6 +18,7 @@ class WeatherApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _weatherViewModel = Provider.of<WeatherViewModel>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Weather App"),
@@ -32,7 +35,7 @@ class WeatherApp extends StatelessWidget {
       ),
       body: Center(
         child: (_weatherViewModel.state == WeatherState.WeatherLoadedState)
-            ? havaDurumuGeldi(context)
+            ? HavaDurumuGeldi()
             : (_weatherViewModel.state == WeatherState.WeatherLoadingState)
                 ? havaDurumuGetiriliyor()
                 : (_weatherViewModel.state == WeatherState.WeatherErrorState)
@@ -42,49 +45,80 @@ class WeatherApp extends StatelessWidget {
     );
   }
 
-  ListView havaDurumuGeldi(BuildContext context) {
-    var getirilenHavaDurumuKisaltmasi = Provider.of<WeatherViewModel>(context)
-        .getirilenWeather
-        .consolidatedWeather[0]
-        .weatherStateAbbr;
-    Provider.of<MyThemeViewModel>(context)
-        .temaDegistir(getirilenHavaDurumuKisaltmasi);
-
-    return ListView(
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(
-              child: LocationWidget(
-            secilenSehir: kullanicininSectigiSehir,
-          )),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(child: SonGuncellemeWidget()), //parametresiz kullanım
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(child: HavaDurumuResimWidget()),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(
-              16.0), //getirilen hava durumunu parametre olarak geçtik
-          child: Center(
-              child: MaxveMinSicaklikWidget(
-            bugununDegerleri:
-                _weatherViewModel.getirilenWeather.consolidatedWeather[0],
-          )),
-        ),
-      ],
-    );
-  }
-
   havaDurumuGetiriliyor() {
     return CircularProgressIndicator();
   }
 
   havaDurumuGetirHata() {
     return Text("Hava durumu getirilirken hata olustu");
+  }
+}
+
+class HavaDurumuGeldi extends StatefulWidget {
+  @override
+  _HavaDurumuGeldiState createState() => _HavaDurumuGeldiState();
+}
+
+class _HavaDurumuGeldiState extends State<HavaDurumuGeldi> {
+  WeatherViewModel _weatherViewModel;
+  Completer<void> _refreshIndicator;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _refreshIndicator = Completer<void>();
+    debugPrint("init state tetiklendi");
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      var kisaltma =
+          Provider.of<WeatherViewModel>(context).havaDurumuKisaltmasi();
+      debugPrint("kisaltma kodu:" + kisaltma);
+      Provider.of<MyThemeViewModel>(context).temaDegistir(kisaltma);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint("widget build tetiklendi");
+    _refreshIndicator.complete();
+    _refreshIndicator = Completer<void>();
+
+    _weatherViewModel = Provider.of<WeatherViewModel>(context);
+    String kullanicininSectigiSehir = _weatherViewModel.getirilenWeather.title;
+
+    return RefreshIndicator(
+      onRefresh: () {
+        _weatherViewModel.havaDurumunuGuncelle(kullanicininSectigiSehir);
+        return _refreshIndicator.future;
+      },
+      child: ListView(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+                child: LocationWidget(
+              secilenSehir: kullanicininSectigiSehir,
+            )),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(child: SonGuncellemeWidget()), //parametresiz kullanım
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(child: HavaDurumuResimWidget()),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(
+                16.0), //getirilen hava durumunu parametre olarak geçtik
+            child: Center(
+                child: MaxveMinSicaklikWidget(
+              bugununDegerleri:
+                  _weatherViewModel.getirilenWeather.consolidatedWeather[0],
+            )),
+          ),
+        ],
+      ),
+    );
   }
 }

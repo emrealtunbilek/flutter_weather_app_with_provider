@@ -40,4 +40,16 @@ class WeatherViewModel with ChangeNotifier {
     }
     return _getirilenWeather;
   }
+
+  Future<Weather> havaDurumunuGuncelle(String sehirAdi) async {
+    try {
+      _getirilenWeather = await _repository.getWeather(sehirAdi);
+      state = WeatherState.WeatherLoadedState;
+    } catch (e) {}
+    return _getirilenWeather;
+  }
+
+  String havaDurumuKisaltmasi() {
+    return _getirilenWeather.consolidatedWeather[0].weatherStateAbbr;
+  }
 }
