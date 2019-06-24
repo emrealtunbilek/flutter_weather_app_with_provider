@@ -5,6 +5,7 @@ import 'package:flutter_weatherapp_with_bloc/viewmodels/mytheme_view_model.dart'
 import 'package:flutter_weatherapp_with_bloc/viewmodels/weather_view_model.dart';
 import 'package:provider/provider.dart';
 
+import 'gecisli_arkaplan_renk.dart';
 import 'hava_durumu_resim.dart';
 import 'location.dart';
 import 'max_min_sicaklik.dart';
@@ -86,38 +87,42 @@ class _HavaDurumuGeldiState extends State<HavaDurumuGeldi> {
     _weatherViewModel = Provider.of<WeatherViewModel>(context);
     String kullanicininSectigiSehir = _weatherViewModel.getirilenWeather.title;
 
-    return RefreshIndicator(
-      onRefresh: () {
-        _weatherViewModel.havaDurumunuGuncelle(kullanicininSectigiSehir);
-        return _refreshIndicator.future;
-      },
-      child: ListView(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-                child: LocationWidget(
-              secilenSehir: kullanicininSectigiSehir,
-            )),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(child: SonGuncellemeWidget()), //parametresiz kullanım
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(child: HavaDurumuResimWidget()),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(
-                16.0), //getirilen hava durumunu parametre olarak geçtik
-            child: Center(
-                child: MaxveMinSicaklikWidget(
-              bugununDegerleri:
-                  _weatherViewModel.getirilenWeather.consolidatedWeather[0],
-            )),
-          ),
-        ],
+    return GecisliRenkContainer(
+      renk: Provider.of<MyThemeViewModel>(context).myTheme.renk,
+      child: RefreshIndicator(
+        onRefresh: () {
+          _weatherViewModel.havaDurumunuGuncelle(kullanicininSectigiSehir);
+          return _refreshIndicator.future;
+        },
+        child: ListView(
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                  child: LocationWidget(
+                secilenSehir: kullanicininSectigiSehir,
+              )),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child:
+                  Center(child: SonGuncellemeWidget()), //parametresiz kullanım
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(child: HavaDurumuResimWidget()),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(
+                  16.0), //getirilen hava durumunu parametre olarak geçtik
+              child: Center(
+                  child: MaxveMinSicaklikWidget(
+                bugununDegerleri:
+                    _weatherViewModel.getirilenWeather.consolidatedWeather[0],
+              )),
+            ),
+          ],
+        ),
       ),
     );
   }
